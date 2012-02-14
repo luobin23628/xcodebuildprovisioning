@@ -1,4 +1,4 @@
-#A tool to run xcodebuild with specifying developer identity provisioning profile
+#A tool to run xcodebuild with specifying developer identity and provisioning profile
 
 Script written in PHP. It gives you a list of developer identities to select from and automatically finds a *.mobileprovision file for your selection. Or you can enter your credentials in config and script will silently build your app.
 
