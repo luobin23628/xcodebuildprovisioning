@@ -16,10 +16,10 @@ Feel free to send me your propositions and improvements.
 
 Define these constants in your `xcodebuildprovisioning.php` file to make script run with no prompts.
 
-1. `define('TARGET_SDK', 'iphoneos');` &mdash default SDK to use.
+1. `define('TARGET_SDK', 'iphoneos');` &mdash; default SDK to use.
 
-1. `define('DEVELOPER_IDENTITY', '');` &mdash your developer identity in format: "iPhone Developer: Name (XXXX)".
+1. `define('DEVELOPER_IDENTITY', '');` &mdash; your developer identity in format: "iPhone Developer: Name (XXXX)".
 
-1. `define('PROV_PROFILE_PATH', '');` &mdash full path to provisioning profile.
+1. `define('PROV_PROFILE_PATH', '');` &mdash; full path to provisioning profile.
 
-1. `define('TEAM_IDENTIFIER', '');` &mdash your team identifier in format: "XXXYYYZZZZ", only letters.
+1. `define('TEAM_IDENTIFIER', '');` &mdash; your team identifier in format: "XXXYYYZZZZ", only letters.
