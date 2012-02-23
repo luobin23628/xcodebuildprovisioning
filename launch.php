@@ -103,9 +103,17 @@ log_message("\033[32mxcodebuildprovisioning\033[37m\n$projectName");
 
 ###########################################################
 # Identity
+#
+# Script will run
+#
+# security find-identity -v -p codesigning
+#
+# to list all of the codesigning identities found on
+# your machine.
 ###########################################################
 
 $developerIdentity;
+
 if (defined('DEVELOPER_IDENTITY')) {
 	$developerIdentity = DEVELOPER_IDENTITY;
 } else {
@@ -143,10 +151,19 @@ if (defined('DEVELOPER_IDENTITY')) {
 log_message('Using identity "' . $developerIdentity . '"');
 
 ###########################################################
-# Find certificate name
+# Provisioning profile
+#
+# Script will look in 
+# ~/Library/MobileDevice/Provisioning\ Profiles/ dir
+# and try to find PEM of your identity certificate in
+# every file.
+#
+# If not found - you will be prompted to choose one by team
+# identifier.
 ###########################################################
 
 $provProfilePath;
+
 if (defined('PROV_PROFILE_PATH')) {
 	$provProfilePath = PROV_PROFILE_PATH;	
 } else {
@@ -160,15 +177,26 @@ if (defined('PROV_PROFILE_PATH')) {
 
 	$provProfilesDirPath = exec_command('cd ~/Library/MobileDevice/Provisioning\ Profiles/ && pwd', TRUE);
 
-	$provProfilePath;
+	// Search for appropriate provisioning profile
+	$provProfiles = array();
+	
 	$handle = opendir($provProfilesDirPath);
 	if ( ! $handle) die_with_error('Couldn\'t read provisioning profiles directory');
+	
 	while (($fileName = readdir($handle)) !== false) {
 		if (pathinfo($fileName, PATHINFO_EXTENSION) != 'mobileprovision') continue;
 
+		// Prepare contents
 		$contents = file_get_contents($provProfilesDirPath . '/' . $fileName);
 		$contents = str_replace("\t", '', $contents);
 		$contents = str_replace("\n", '', $contents);
+
+		// Collect team identifier
+		$teamIdentifierPos = strpos($contents, 'TeamIdentifier');
+		$teamIdentifierPos1 = strpos($contents, '<string>', $teamIdentifierPos) + strlen('<string>');
+		$teamIdentifierPos2 = strpos($contents, '</string>', $teamIdentifierPos1);
+		$teamIdentifier = substr($contents, $teamIdentifierPos1, $teamIdentifierPos2 - $teamIdentifierPos1);
+		$provProfiles[$teamIdentifier] = $provProfilesDirPath . '/' . $fileName;
 
 		$found = strpos($contents, $pem);
 		if ($found !== false) {
@@ -177,8 +205,46 @@ if (defined('PROV_PROFILE_PATH')) {
 	}
 	closedir($handle);
 
-	if ( ! isset($provProfilePath)) die_with_error('Couldn\'t find provisioning profile');
+	if (empty($provProfiles)) die_with_error('No provisioning profiles found');
+
+	if (empty($provProfilePath)) log_message('Couldn\'t automatically find provisioning profile');
+		
+	if (empty($provProfilePath) && defined('TEAM_IDENTIFIER')) {
+		if (isset($provProfiles[TEAM_IDENTIFIER])) {
+			$provProfilePath = $provProfiles[TEAM_IDENTIFIER];
+		} else {
+			log_message('Also couldn\'t find provisioning profile with specified TEAM_IDENTIFIER');
+		}
+	}
+
+	if (empty($provProfilePath)) {
+		// Choose team id
+		log_message('Please select appropriate team identifier');
+		$i = 0;
+		foreach ($provProfiles as $teamIdentifier => $path) {
+			echo ++$i . ') ' . $teamIdentifier . PHP_EOL;
+		}
+
+		$provProfilesChoice = -1;
+		while ($provProfilesChoice <= 0 ||
+			   $provProfilesChoice > count($provProfiles)) {
+			echo 'Please enter a number (from 1 to ' . count($provProfiles) . '): ';
+			$provProfilesChoice = trim(fgets(STDIN));
+		}
+		$provProfilesChoice = intval($provProfilesChoice) - 1;
+
+		$i = 0;
+		foreach ($provProfiles as $teamIdentifier => $path) {
+			if ($i == $provProfilesChoice) {
+				$provProfilePath = $path;
+				break;				
+			}
+			$i++;
+		}
+	}
 }
+
+if (empty($provProfilePath)) die_with_error('Couldn\'t find provisioning profile');
 
 log_message('Using provisioning profile:' . PHP_EOL . $provProfilePath);
 
