@@ -17,7 +17,7 @@ define('SCRIPT_DIR_PATH', 'path/to/xcodebuildprovisioning');
 // Useful when using with CI
 // define('DEVELOPER_IDENTITY', '');
 // define('PROV_PROFILE_PATH', '');
-// define('TEAM_IDENTIFIER', '');
+// define('APPLICATION_IDENTIFIER', '');
 
 ###########################################################
 # Launch

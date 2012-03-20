@@ -191,12 +191,12 @@ if (defined('PROV_PROFILE_PATH')) {
 		$contents = str_replace("\t", '', $contents);
 		$contents = str_replace("\n", '', $contents);
 
-		// Collect team identifier
-		$teamIdentifierPos = strpos($contents, 'TeamIdentifier');
-		$teamIdentifierPos1 = strpos($contents, '<string>', $teamIdentifierPos) + strlen('<string>');
-		$teamIdentifierPos2 = strpos($contents, '</string>', $teamIdentifierPos1);
-		$teamIdentifier = substr($contents, $teamIdentifierPos1, $teamIdentifierPos2 - $teamIdentifierPos1);
-		$provProfiles[$teamIdentifier] = $provProfilesDirPath . '/' . $fileName;
+		// Collect application identifier
+		$appIdentifierPos = strpos($contents, 'application-identifier');
+		$appIdentifierPos1 = strpos($contents, '<string>', $appIdentifierPos) + strlen('<string>');
+		$appIdentifierPos2 = strpos($contents, '</string>', $appIdentifierPos1);
+		$appIdentifier = substr($contents, $appIdentifierPos1, $appIdentifierPos2 - $appIdentifierPos1);
+		$provProfiles[$appIdentifier] = $provProfilesDirPath . '/' . $fileName;
 
 		$found = strpos($contents, $pem);
 		if ($found !== false) {
@@ -209,20 +209,20 @@ if (defined('PROV_PROFILE_PATH')) {
 
 	if (empty($provProfilePath)) log_message('Couldn\'t automatically find provisioning profile');
 		
-	if (empty($provProfilePath) && defined('TEAM_IDENTIFIER')) {
-		if (isset($provProfiles[TEAM_IDENTIFIER])) {
-			$provProfilePath = $provProfiles[TEAM_IDENTIFIER];
+	if (empty($provProfilePath) && defined('APPLICATION_IDENTIFIER')) {
+		if (isset($provProfiles[APPLICATION_IDENTIFIER])) {
+			$provProfilePath = $provProfiles[APPLICATION_IDENTIFIER];
 		} else {
-			log_message('Also couldn\'t find provisioning profile with specified TEAM_IDENTIFIER');
+			log_message('Also couldn\'t find provisioning profile with specified APPLICATION_IDENTIFIER');
 		}
 	}
 
 	if (empty($provProfilePath)) {
-		// Choose team id
-		log_message('Please select appropriate team identifier');
+		// Choose app id
+		log_message('Please select appropriate application identifier');
 		$i = 0;
-		foreach ($provProfiles as $teamIdentifier => $path) {
-			echo ++$i . ') ' . $teamIdentifier . PHP_EOL;
+		foreach ($provProfiles as $appIdentifier => $path) {
+			echo ++$i . ') ' . $appIdentifier . PHP_EOL;
 		}
 
 		$provProfilesChoice = -1;
@@ -234,7 +234,7 @@ if (defined('PROV_PROFILE_PATH')) {
 		$provProfilesChoice = intval($provProfilesChoice) - 1;
 
 		$i = 0;
-		foreach ($provProfiles as $teamIdentifier => $path) {
+		foreach ($provProfiles as $appIdentifier => $path) {
 			if ($i == $provProfilesChoice) {
 				$provProfilePath = $path;
 				break;				
